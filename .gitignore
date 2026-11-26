@@ -1,0 +1,16 @@
+# Dependencies (restore with `npm install`)
+node_modules/
+
+# Build output (regenerate with `npm run build`)
+dist/
+coverage/
+
+# Environment and logs
+.env
+.env.*
+*.log
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
