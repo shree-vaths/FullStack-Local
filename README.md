@@ -13,10 +13,10 @@ The two are independent packages, each with its own `package.json`, `tsconfig.js
 
 ### 1. Prerequisites
 
-- **Node.js 24** (pinned in the repository's root [`.nvmrc`](../.nvmrc); nvm also finds it from any subfolder). With [nvm](https://github.com/nvm-sh/nvm):
+- **Node.js 24** (pinned in [`.nvmrc`](.nvmrc); nvm also finds it from `server/` and `client/`). With [nvm](https://github.com/nvm-sh/nvm):
   ```bash
-  nvm install 24   # first time only
-  nvm use          # in each new terminal (or `nvm use 24` outside this repo)
+  nvm install   # first time only
+  nvm use       # in each new terminal
   ```
   > Node 20 is end-of-life and won't work: `better-sqlite3` has no prebuilt binary for it.
 - npm 10+ (comes with Node)

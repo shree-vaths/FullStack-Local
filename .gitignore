@@ -5,6 +5,11 @@ node_modules/
 dist/
 coverage/
 
+# SQLite runtime side files. The database itself (server/data/app.db) IS
+# committed; these are temporary files SQLite manages while it is open.
+*.db-wal
+*.db-shm
+
 # Environment and logs
 .env
 .env.*
