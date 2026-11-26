@@ -9,10 +9,12 @@ import { createUserRouter } from './routes/userRoutes';
 import { createUserService } from './services/userService';
 
 /**
- * Composition root: builds the app by wiring db -> repositories -> services -> routes.
+ * Creates the Express app and connects its layers:
+ *   repositories (run SQL) -> service (business rules) -> routes (handle URLs)
  *
- * The database is passed in rather than imported, so tests can hand in an
- * in-memory DB, and building the app never has side effects like opening a port.
+ * The database is passed in as a parameter instead of being opened here, so:
+ *  - index.ts passes the real database file
+ *  - tests pass a temporary in-memory database, so they never touch real data
  */
 export function createApp(db: Db): Express {
   const userService = createUserService({
@@ -21,10 +23,9 @@ export function createApp(db: Db): Express {
   });
 
   const app = express();
-  app.disable('x-powered-by'); // don't advertise the framework to clients
+  app.disable('x-powered-by'); // hides the "X-Powered-By: Express" header
 
-  // Reports whether the app can actually reach its database, so a load
-  // balancer / uptime check can take an unhealthy instance out of rotation.
+  // Lets Render / uptime monitors check the server and its DB are working (503 if not).
   app.get('/api/health', (_req, res) => {
     if (isDatabaseHealthy(db)) {
       res.json({ data: { status: 'ok', database: 'ok' } });
@@ -37,7 +38,7 @@ export function createApp(db: Db): Express {
   });
   app.use('/api/users', createUserRouter(userService));
 
-  // Must be registered after all routes.
+  // Express runs handlers in order, so these two only see requests the routes above didn't handle.
   app.use(notFoundHandler);
   app.use(errorHandler);
 

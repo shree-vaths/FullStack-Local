@@ -39,7 +39,7 @@ function assignTransactionOwners<T>(users: T[], total: number, minPerUser: numbe
 /** Replaces all data in the database with freshly generated fake data. */
 export function seedDatabase(db: Db, options: SeedOptions): void {
   const { userCount, transactionCount, minTransactionsPerUser = 0, randomSeed = 42 } = options;
-  // Fail before touching the DB if the numbers can't add up.
+  // Impossible combinations are rejected before any data is changed.
   if (userCount * minTransactionsPerUser > transactionCount) {
     throw new Error(
       `Cannot give ${userCount} users at least ${minTransactionsPerUser} transactions each ` +
@@ -47,7 +47,7 @@ export function seedDatabase(db: Db, options: SeedOptions): void {
     );
   }
   faker.seed(randomSeed);
-  // Anchor "now" so the same seed produces identical dates regardless of when it runs.
+  // A fixed "now", so the same seed gives the same dates whenever it runs.
   const referenceDate = new Date('2026-01-01T00:00:00Z');
 
   const insertUser = db.prepare<[string, string, string, ServiceLevel]>(
@@ -61,7 +61,7 @@ export function seedDatabase(db: Db, options: SeedOptions): void {
   // than letting SQLite commit (and fsync) after every insert.
   const run = db.transaction(() => {
     db.exec('DELETE FROM transactions; DELETE FROM users;');
-    // Reset AUTOINCREMENT counters so IDs start at 1 on every run.
+    // Resets the ID counters, so IDs start at 1 on every run.
     db.exec(`DELETE FROM sqlite_sequence WHERE name IN ('users', 'transactions');`);
 
     const users: { id: number; registeredAt: Date }[] = [];
@@ -77,7 +77,7 @@ export function seedDatabase(db: Db, options: SeedOptions): void {
     }
 
     for (const user of assignTransactionOwners(users, transactionCount, minTransactionsPerUser)) {
-      // Keep data plausible: a user can't receive a service before they registered.
+      // Service dates fall on or after the user's registration date.
       const serviceDate = faker.date.between({ from: user.registeredAt, to: referenceDate });
       insertTransaction.run(
         user.id,

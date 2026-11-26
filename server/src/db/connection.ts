@@ -47,14 +47,14 @@ export function openDatabase(filePath: string): Db {
   // Step 2: configure it and apply the schema. SQLite opens files lazily, so a
   // corrupt or non-SQLite file only fails here, on the first real statement.
   try {
-    // SQLite ships with foreign key enforcement OFF; it must be enabled per connection.
+    // SQLite leaves foreign key checks off unless they're turned on for each connection.
     db.pragma('foreign_keys = ON');
     // WAL lets reads proceed while a write is in progress (better concurrency for a web server).
     if (!inMemory) db.pragma('journal_mode = WAL');
     applySchema(db);
     return db;
   } catch (error) {
-    // Don't leak the open file handle when initialisation fails.
+    // Closes the half-opened file before reporting the failure.
     db.close();
     throw new DatabaseConnectionError(
       `The database at "${filePath}" could not be initialised (corrupt file, not a SQLite database, or schema error)`,

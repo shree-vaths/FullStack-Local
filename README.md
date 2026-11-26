@@ -21,53 +21,50 @@ The two are independent packages, each with its own `package.json`, `tsconfig.js
   > Node 20 is end-of-life and won't work: `better-sqlite3` has no prebuilt binary for it.
 - npm 10+ (comes with Node)
 
-### 2. Install
+### 2. Backend (server)
+
+Open a terminal in this project folder (`cofactor_local/`) and run:
 
 ```bash
 cd server
-npm install
-
-cd ../client
-npm install
+nvm use
+npm install       # install dependencies
+npm run seed      # optional: fill the database (see below)
+npm run dev       # start the API on http://localhost:3001
 ```
 
-The repository includes a ready-made database, `server/data/app.db` (100 users, 1500 transactions), so no seeding is needed. To reset it to fresh sample data at any time, run `npm run seed` in `server/`. The data is the same on every run.
+Leave this terminal running. The API reloads automatically when you change a file.
 
-### 3. Run (two terminals)
+About `npm run seed`: the repository already includes a seeded `server/data/app.db` (100 users, 1500 transactions), so it's optional on a fresh clone. It's needed when the database file is missing or empty (the server prints `Warning: the database has no users`), and it's also how to reset the data. See [Seeding](#seeding) for details.
+
+Check it works: http://localhost:3001/api/health returns `{"data":{"status":"ok","database":"ok"}}`.
+
+Run the backend tests (API, pagination, failure handling; in-memory SQLite, `app.db` untouched) from another terminal in `server/`, or after stopping the API with Ctrl+C:
 
 ```bash
-# Terminal 1: API on http://localhost:3001
-cd server && nvm use && npm run dev
-
-# Terminal 2: UI on http://localhost:5173
-cd client && nvm use && npm run dev
+npm test
 ```
 
-Open **http://localhost:5173**. The Vite dev server forwards `/api/*` to the API, so the browser sees a single origin and no CORS setup is needed.
+### 3. Frontend (client)
 
-Both dev servers reload automatically when you change a file.
-
-### 4. Test
+Open a second terminal in this project folder (`cofactor_local/`) and run:
 
 ```bash
-cd server && npm test     # API, pagination, failure handling (in-memory SQLite)
-cd client && npm test     # components, hooks, HTTP client, whole-app flows (jsdom)
+cd client
+nvm use
+npm install       # install dependencies
+npm run dev       # start the UI on http://localhost:5173
+```
+
+Open **http://localhost:5173**. The backend from step 2 has to be running: the Vite dev server forwards `/api/*` to it, so the browser sees a single origin and no CORS setup is needed. The UI reloads automatically when you change a file.
+
+Run the frontend tests (components, hooks, HTTP client, whole-app flows; jsdom, no backend needed) from another terminal in `client/`, or after stopping the UI with Ctrl+C:
+
+```bash
+npm test
 ```
 
 ---
-
-## Scripts
-
-Run these inside `server/` or `client/`.
-
-| Script | server/ | client/ |
-|---|---|---|
-| `npm run dev` | API with auto-reload (`tsx watch`) | Vite dev server with hot reload |
-| `npm start` | API without auto-reload | – |
-| `npm run seed` | Reset the DB with fresh sample data | – |
-| `npm run build` | – | Type-check and build to `client/dist/` |
-| `npm run preview` | – | Serve the built `dist/` locally |
-| `npm test` / `npm run test:watch` | Vitest + Supertest | Vitest + Testing Library |
 
 
 ## Configuration
@@ -177,7 +174,25 @@ JSON ◀── route (zod validation) ◀── userService ◀── userReposi
 
 **Add an endpoint:** repository method → service method → route (validate with a zod schema in `routes/validation.ts`) → a function in `client/src/api/usersApi.ts`.
 
-**Reset the data:** `npm run seed` in `server/`. It replaces everything in one transaction and generates the same data on every run (fixed random seed).
+**Reset the data:** `npm run seed` in `server/` (see [Seeding](#seeding)).
+
+### Seeding
+
+`npm run seed` (in `server/`) runs `src/db/seed.ts`, which fills `server/data/app.db` with fake data from `seedDatabase()` in `src/db/seedData.ts`:
+
+| | |
+|---|---|
+| **Users** | 100, with a name, a registration date within the past 3 years, a country and a service level (`basic`/`premium`/`elite`) |
+| **Transactions** | 1500, at least 10 per user (11–24 in practice), service IDs 1–20, prices $10.00–$500.00 (stored as cents), service dates on or after the user's registration date |
+| **Same data every run** | Fixed random seed (42) and a fixed reference date, so user 7 is always the same person on every machine |
+| **Replaces existing data** | Deletes all rows first and restarts IDs at 1 |
+| **All or nothing** | Runs in one database transaction; if it fails part-way, the previous data is left intact and the command exits with code 1 |
+
+It writes to the file at `DATABASE_PATH` (default `server/data/app.db`); e.g. `DATABASE_PATH=/tmp/test.db npm run seed` seeds a separate file. The tests use the same `seedDatabase()` with smaller numbers on a temporary in-memory database, so they never touch `app.db`.
+
+The brief asks for 1000 transactions; with 100 users × 10 minimum, that would give every user exactly 10. The extra 500 are spread randomly so per-user counts vary.
+
+Re-seeding rewrites `app.db`, so git may show it as modified even though the data is identical.
 
 ### Keeping types in sync
 

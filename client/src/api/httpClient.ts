@@ -78,8 +78,7 @@ async function send(path: string, signal?: AbortSignal): Promise<Response> {
 
 async function parseBody<T>(response: Response): Promise<T> {
   try {
-    // NOTE: trusts the server's shape (cast, not validated). Fine with one
-    // server we control; validate with a schema if the API is third-party.
+    // The response shape is trusted (cast, not validated), since we control the server.
     return (await response.json()) as T;
   } catch (error) {
     throw new ApiRequestError(response.status, 'INVALID_RESPONSE', 'The server sent an unreadable response.', {

@@ -26,8 +26,7 @@ export class AppError extends Error {
 /**
  * Suggested wait before retrying a temporarily unavailable database. Locks in
  * SQLite last milliseconds to seconds (we already waited up to the 5s busy
- * timeout), so a short pause is enough. Clients should still back off on
- * repeated failures.
+ * timeout), so a short pause is enough.
  */
 export const DB_RETRY_AFTER_SECONDS = 1;
 

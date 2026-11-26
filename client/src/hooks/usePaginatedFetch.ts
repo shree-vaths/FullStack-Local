@@ -19,8 +19,8 @@ interface Result<Request, Row> {
  * - Keeps showing the previous page while the next one loads (no flicker).
  * - `retry()` re-sends the same request after an error.
  *
- * `fetchPage` must be stable between renders (module function or useCallback),
- * otherwise every render would start a new request.
+ * Expects `fetchPage` to stay the same between renders (a module function or
+ * useCallback); a new function on each render would start a new request each time.
  */
 export function usePaginatedFetch<Params, Row>(fetchPage: FetchPage<Params, Row>, params: Params) {
   const [attempt, setAttempt] = useState(0);
@@ -38,7 +38,7 @@ export function usePaginatedFetch<Params, Row>(fetchPage: FetchPage<Params, Row>
         if (isAbortError(error)) return;
         setResult((previous) => ({
           request,
-          page: previous?.page, // keep the last good page visible behind the error
+          page: previous?.page, // the last good page stays visible behind the error
           error: error instanceof Error ? error : new Error(String(error)),
         }));
       });

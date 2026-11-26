@@ -16,7 +16,7 @@ const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 function fail(message: string, error: unknown): never {
   console.error(`Fatal: ${message}`);
-  console.error(error); // includes the `cause` chain, e.g. the underlying SQLite error
+  console.error(error);
   process.exit(1);
 }
 

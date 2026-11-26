@@ -105,7 +105,7 @@ describe('API behaviour when the database fails', () => {
   let app: ReturnType<typeof createApp>;
 
   beforeEach(() => {
-    // Server errors are logged by design; keep test output clean.
+    // Silences the server's expected error logs in the test output.
     vi.spyOn(console, 'error').mockImplementation(() => {});
     db = openDatabase(':memory:');
     seedDatabase(db, { userCount: 3, transactionCount: 30 });

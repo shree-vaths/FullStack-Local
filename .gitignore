@@ -1,7 +1,7 @@
-# Dependencies (restore with `npm install`)
+# Dependencies (recreated by `npm install`)
 node_modules/
 
-# Build output (regenerate with `npm run build`)
+# Build output (recreated by `npm run build`)
 dist/
 coverage/
 

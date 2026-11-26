@@ -172,7 +172,7 @@ function DataRow<Row, SortField extends string>({
   isSelected: boolean;
   onClick?: (row: Row) => void;
 }) {
-  // Clickable rows must also work from the keyboard (Tab to focus, Enter/Space to open).
+  // Clickable rows also work from the keyboard: Tab focuses a row, Enter/Space opens it.
   const interactiveProps = onClick
     ? {
         tabIndex: 0,

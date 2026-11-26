@@ -31,7 +31,7 @@ const COLUMNS = 'id, name, registration_date, country, service_level';
 /** API sort field -> SQL expression (the allow-list used by orderByClause). */
 const SORT_COLUMNS: Record<UserSortField, string> = {
   id: 'id',
-  name: 'name COLLATE NOCASE', // "alice" and "Bob" sort the way a person expects
+  name: 'name COLLATE NOCASE',
   registrationDate: 'registration_date',
 };
 
@@ -48,9 +48,7 @@ export function createUserRepository(db: Db): UserRepository {
   const preparePage = createStatementCache<[limit: number, offset: number], UserRow>(db);
 
   // Page + count run in one read transaction, so the total always describes
-  // the same snapshot as the rows, even if a write lands in between.
-  // NOTE: OFFSET gets slower for deep pages of large tables; keyset (cursor)
-  // pagination is the scale-up path (Part 3).
+  // the same snapshot as the rows, even if a write lands in between
   const findPage = db.transaction((query: ListQuery<UserSortField>): PageResult<User> => {
     const { limit, offset } = toLimitOffset(query);
     const rows = preparePage(

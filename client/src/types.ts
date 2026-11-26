@@ -1,8 +1,8 @@
 /**
  * Domain model and API contract, as the UI receives it from the API.
  *
- * KEEP IN SYNC: this is a copy of server/src/types.ts. If the backend changes a
- * field, change it here too; nothing checks the two files against each other.
+ * A copy of server/src/types.ts. The two files are kept in step by hand;
+ * nothing checks them against each other.
  */
 
 /** Allowed service levels. Single source of truth for the DB check, validation and seeding. */

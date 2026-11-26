@@ -18,13 +18,6 @@ export const notFoundHandler: RequestHandler = (req, res) => {
  * the same response shape and the same logging.
  */
 export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
-  // If the response is already partly sent we can't change its status or
-  // body; let Express's default handler close the connection.
-  if (res.headersSent) {
-    next(err);
-    return;
-  }
-
   const appError = err instanceof AppError ? err : undefined;
 
   // Client mistakes (4xx) are expected and not worth logging. Server-side
@@ -34,14 +27,12 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     console.error(`[${req.method} ${req.originalUrl}]`, err);
   }
 
-  // Unknown errors get a generic message so internals (stack traces, SQL)
-  // never reach the client.
-  // Tells clients the failure is temporary and when to try again (e.g. 503s
-  // from a locked or closing database). Retrying is left to the client.
+  // Temporary failures (e.g. a busy database) tell the client when to retry.
   if (appError?.retryAfterSeconds !== undefined) {
     res.set('Retry-After', String(appError.retryAfterSeconds));
   }
 
+  // Unknown errors get a generic message, so stack traces and SQL stay out of the response.
   const status = appError?.status ?? 500;
   const body: ApiError = {
     error: appError

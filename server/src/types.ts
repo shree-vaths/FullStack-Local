@@ -4,8 +4,6 @@
  * These types describe the JSON the HTTP API returns (camelCase), not the
  * database rows (snake_case); the repositories map between the two.
  *
- * KEEP IN SYNC: the frontend has its own copy in client/src/types.ts. If you change
- * a field here, change it there too (the client type-check will not catch drift).
  */
 
 /** Allowed service levels. Single source of truth for the DB check, validation and seeding. */
@@ -52,11 +50,9 @@ export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
 
 export interface PageInfo {
-  /** 1-based page number that was returned. */
   page: number;
   pageSize: number;
   totalItems: number;
-  /** 0 when there are no items. A page past the end returns an empty `data` array. */
   totalPages: number;
 }
 
