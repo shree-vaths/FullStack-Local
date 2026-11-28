@@ -29,7 +29,7 @@ Open a terminal in this project folder (`cofactor_local/`) and run:
 cd server
 nvm use
 npm install       # install dependencies
-npm run seed      # optional: fill the database (see below)
+npm run seed     
 npm run dev       # start the API on http://localhost:3001
 ```
 
